@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	<meta title="rpgfl" package="rpgfl" version="1.0.0" company="tienery" />
+	
+	<app main="Main" file="rpgfl" path="bin" />
+	
+	<window background="#000000" fps="60" />
+	<window width="800" height="480" unless="mobile" />
+	<window orientation="landscape" vsync="false" antialiasing="0" if="cpp" />
+	
+	<source path="src" />
+	<haxelib name="openfl" />
+    <haxelib name="hscript" />
+	<haxelib name="actuate" />
+	
+	<icon path="assets/openfl.svg" />
+	<assets path="assets/img" rename="img" />
+	
+	<!-- optimize output
+	<haxeflag name="-dce full" /> -->
+	
+</project>
