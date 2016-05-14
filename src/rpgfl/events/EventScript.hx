@@ -1,4 +1,5 @@
 package rpgfl.events;
+import haxe.Constraints.Function;
 import openfl.geom.Point;
 
 class EventScript
@@ -16,13 +17,14 @@ class EventScript
         return c;
     }
     
-    public static function showChoices(values:Array<String>, cancelId:Int = 1)
+    public static function showChoices(values:Array<String>, confirms:Array<Function>, cancelId:Int = 1)
     {
         var c = new Command();
         c.type = SHOW_CHOICES;
         c.onContinue = 'confirm';
         c.data0 = values;
-        c.data1 = cancelId;
+        c.data1 = confirms;
+        c.data2 = cancelId;
         return c;
     }
     
@@ -340,6 +342,370 @@ class EventScript
         c.data2 = green;
         c.data3 = blue;
         c.data4 = time;
+        return c;
+    }
+    
+    public static function erasePicture(orderIndex:Int)
+    {
+        var c = new Command();
+        c.type = ERASE_PICTURE;
+        c.data0 = orderIndex;
+        return c;
+    }
+    
+    public static function setWeatherEffect(weatherId:Int, power:Int = 9, time:Int = 1000, wait:Bool = true)
+    {
+        var c = new Command();
+        c.type = SET_WEATHER_EFFECTS;
+        c.onContinue = wait ? 'onTimeComplete' : '';
+        c.data0 = weatherId;
+        c.data1 = power;
+        c.data2 = time;
+        return c;
+    }
+    
+    public static function playBackgroundMusic(soundId:Int)
+    {
+        var c = new Command();
+        c.type = PLAY_BGM;
+        c.data0 = soundId;
+        return c;
+    }
+    
+    public static function fadeoutBackgroundMusic(seconds:Int = 4)
+    {
+        var c = new Command();
+        c.type = FADEOUT_BGM;
+        c.data0 = seconds;
+        return c;
+    }
+    
+    public static function saveBackgroundMusic()
+    {
+        var c = new Command();
+        c.type = SAVE_BGM;
+        return c;
+    }
+    
+    public static function replayBackgroundMusic()
+    {
+        var c = new Command();
+        c.type = REPLAY_BGM;
+        return c;
+    }
+    
+    public static function playBackgroundSound(soundId:Int)
+    {
+        var c = new Command();
+        c.type = PLAY_BGS;
+        c.data0 = soundId;
+        return c;
+    }
+    
+    public static function fadeoutBackgroundSound(seconds:Int = 4)
+    {
+        var c = new Command();
+        c.type = FADEOUT_BGS;
+        c.data0 = seconds;
+        return c;
+    }
+    
+    public static function playMusicEffect(soundId:Int)
+    {
+        var c = new Command();
+        c.type = PLAY_ME;
+        c.data0 = soundId;
+        return c;
+    }
+    
+    public static function playSoundEffect(soundId:Int)
+    {
+        var c = new Command();
+        c.type = PLAY_SE;
+        c.data0 = soundId;
+        return c;
+    }
+    
+    public static function stopSoundEffect()
+    {
+        var c = new Command();
+        c.type = STOP_SE;
+        return c;
+    }
+    
+    public static function startBattle(encounterId:Int, canEscape:Bool = false, escapeCallback:Function = null, continueOnLoss:Bool = false, lossCallback:Function = null)
+    {
+        var c = new Command();
+        c.type = BATTLE_PROCESS;
+        c.onContinue = 'battleEnd';
+        c.data0 = encounterId;
+        c.data1 = canEscape;
+        c.data2 = escapeCallback;
+        c.data3 = continueOnLoss;
+        c.data4 = lossCallback;
+        return c;
+    }
+    
+    public static function openShop(items:Array<Int>, prices:Array<Int>, allowSelling:Bool = true)
+    {
+        var c = new Command();
+        c.type = SHOP_PROCESS;
+        c.onContinue = 'confirm';
+        c.data0 = items;
+        c.data1 = prices;
+        c.data2 = allowSelling;
+        return c;
+    }
+    
+    public static function openNameInput(actorId:Int, maxChars:Int = 12)
+    {
+        var c = new Command();
+        c.type = NAME_INPUT_PROCESS;
+        c.onContinue = 'confirm';
+        c.data0 = actorId;
+        c.data1 = maxChars;
+        return c;
+    }
+    
+    public static function openMenuScreen()
+    {
+        var c = new Command();
+        c.type = OPEN_MENU_SCREEN;
+        c.onContinue = 'exit';
+        return c;
+    }
+    
+    public static function openSaveScreen()
+    {
+        var c = new Command();
+        c.type = OPEN_SAVE_SCREEN;
+        c.onContinue = 'exit';
+        return c;
+    }
+    
+    public static function gameOver()
+    {
+        var c = new Command();
+        c.type = GAME_OVER;
+        c.onContinue = 'confirm';
+        return c;
+    }
+    
+    public static function openTitleScreen()
+    {
+        var c = new Command();
+        c.type = RETURN_TO_TITLE_SCREEN;
+        return c;
+    }
+    
+    public static function changeBattleMusic(soundId:Int)
+    {
+        var c = new Command();
+        c.type = CHANGE_BATTLE_BGM;
+        c.data0 = soundId;
+        return c;
+    }
+    
+    public static function changeBattleEndMusic(soundId:Int)
+    {
+        var c = new Command();
+        c.type = CHANGE_BATTLE_END_ME;
+        c.data0 = soundId;
+        return c;
+    }
+    
+    public static function changeSaveAccess(allow:Bool)
+    {
+        var c = new Command();
+        c.type = CHANGE_SAVE_ACCESS;
+        c.data0 = allow;
+        return c;
+    }
+    
+    public static function changeMenuAccess(allow:Bool)
+    {
+        var c = new Command();
+        c.type = CHANGE_MENU_ACCESS;
+        c.data0 = allow;
+        return c;
+    }
+    
+    public static function changeEncounter(allow:Bool)
+    {
+        var c = new Command();
+        c.type = CHANGE_ENCOUNTER;
+        c.data0 = allow;
+        return c;
+    }
+    
+    public static function changeFormation(allow:Bool)
+    {
+        var c = new Command();
+        c.type = ALLOW_CHANGE_FORMATION;
+        c.data0 = allow;
+        return c;
+    }
+    
+    public static function changeWindowColor(red:Int, green:Int, blue:Int)
+    {
+        var c = new Command();
+        c.type = CHANGE_WINDOW_COLOR;
+        c.data0 = red;
+        c.data1 = green;
+        c.data2 = blue;
+        return c;
+    }
+    
+    public static function changeActorGraphic(actorId:Int, portraitId:Int, spritesheetId:Int)
+    {
+        var c = new Command();
+        c.type = CHANGE_ACTOR_GRAPHIC;
+        c.data0 = actorId;
+        c.data1 = portraitId;
+        c.data2 = spritesheetId;
+        return c;
+    }
+    
+    public static function changeVehicleGraphic(vehicleId:Int, spritesheetId:Int)
+    {
+        var c = new Command();
+        c.type = CHANGE_VEHICLE_GRAPHIC;
+        c.data0 = vehicleId;
+        c.data1 = spritesheetId;
+        return c;
+    }
+    
+    public static function playMovie(movieId:Int)
+    {
+        var c = new Command();
+        c.type = PLAY_MOVIE;
+        c.onContinue = 'end';
+        c.data0 = movieId;
+        return c;
+    }
+    
+    public static function changeMapNameDisplay(show:Bool)
+    {
+        var c = new Command();
+        c.type = SHOW_MAP_NAME_DISPLAY;
+        c.data0 = show;
+        return c;
+    }
+    
+    public static function changeTileset(tilesetId:Int)
+    {
+        var c = new Command();
+        c.type = CHANGE_TILESET;
+        c.data0 = tilesetId;
+        return c;
+    }
+    
+    public static function changeBattleback(backgroundId:Int, foregroundId:Int)
+    {
+        var c = new Command();
+        c.type = CHANGE_BATTLEBACK;
+        c.data0 = backgroundId;
+        c.data1 = foregroundId;
+        return c;
+    }
+    
+    public static function changeParallaxBack(backgroundId:Int, loopHorizontal:Bool = false, horizontalSpeed:Int = 0, loopVertical:Bool = false, verticalSpeed:Int = 0)
+    {
+        var c = new Command();
+        c.type = CHANGE_PARALLAX_BACK;
+        c.data0 = backgroundId;
+        c.data1 = loopHorizontal;
+        c.data2 = horizontalSpeed;
+        c.data3 = loopVertical;
+        c.data4 = verticalSpeed;
+        return c;
+    }
+    
+    public static function changeEnemyHp(enemyIndex:Int, amount:Int)
+    {
+        var c = new Command();
+        c.type = CHANGE_ENEMY_HP;
+        c.data0 = enemyIndex;
+        c.data1 = amount;
+        return c;
+    }
+    
+    public static function changeEnemyMp(enemyIndex:Int, amount:Int)
+    {
+        var c = new Command();
+        c.type = CHANGE_ENEMY_MP;
+        c.data0 = enemyIndex;
+        c.data1 = amount;
+        return c;
+    }
+    
+    public static function changeEnemyState(enemyIndex:Int, stateId:Int)
+    {
+        var c = new Command();
+        c.type = CHANGE_ENEMY_STATE;
+        c.data0 = enemyIndex;
+        c.data1 = stateId;
+        return c;
+    }
+    
+    public static function enemyRecoverAll(enemyIndex:Int)
+    {
+        var c = new Command();
+        c.type = ENEMY_RECOVER_ALL;
+        c.data0 = enemyIndex;
+        return c;
+    }
+    
+    public static function enemyAppear(enemyIndex:Int)
+    {
+        var c = new Command();
+        c.type = ENEMY_APPEAR;
+        c.data0 = enemyIndex;
+        return c;
+    }
+    
+    public static function enemyTransform(enemyIndex:Int, creatureId:Int)
+    {
+        var c = new Command();
+        c.type = ENEMY_TRANSFORM;
+        c.data0 = enemyIndex;
+        c.data1 = creatureId;
+        return c;
+    }
+    
+    public static function showBattleAnimation(enemyIndex:Int, animationId:Int)
+    {
+        var c = new Command();
+        c.type = SHOW_BATTLE_ANIMATION;
+        c.onContinue = 'onTimerComplete';
+        c.data0 = enemyIndex;
+        c.data1 = animationId;
+        return c;
+    }
+    
+    public static function forceAction(enemyOrActorId:Int, skillId:Int, targetIndex:Int)
+    {
+        var c = new Command();
+        c.type = FORCE_ACTION;
+        c.data0 = enemyOrActorId;
+        c.data1 = skillId;
+        c.data2 = targetIndex;
+        return c;
+    }
+    
+    public static function abortBattle()
+    {
+        var c = new Command();
+        c.type = ABORT_BATTLE;
+        return c;
+    }
+    
+    public static function playerControl(enable:Bool)
+    {
+        var c = new Command();
+        c.type = DISABLE_PLAYER_CONTROL;
+        c.data0 = enable;
+        return c;
     }
     
 }

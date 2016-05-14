@@ -1,5 +1,6 @@
 package rpgfl.events;
 
+@:enum
 abstract CommandType(Int) from Int to Int 
 {
     var SHOW_TEXT:Int               = 0;

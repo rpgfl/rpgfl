@@ -49,6 +49,7 @@ class Role
     {
         spellIds = [];
         spellLevelReqs = [];
+        features = [];
     }
     
 }
