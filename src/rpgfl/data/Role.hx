@@ -3,6 +3,7 @@ package rpgfl.data;
 class Role
 {
     
+    public var id:Int;
     public var name:String;
     
     private var _maxHp:Int;

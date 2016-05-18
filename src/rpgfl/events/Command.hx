@@ -13,12 +13,6 @@ class Command
     public var data4:Dynamic;
     public var data5:Dynamic;
     public var data6:Dynamic;
-    public var data7:Dynamic;
-    public var data8:Dynamic;
-    public var data9:Dynamic;
-    public var data10:Dynamic;
-    public var data11:Dynamic;
-    public var data12:Dynamic;
     
     public function new() 
     {
