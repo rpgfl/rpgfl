@@ -7,7 +7,7 @@ class Skill
     public var name:String;
     public var iconId:Int;
     public var description:String;
-    public var skillType:Int;
+    public var skillTypeId:Int;
     public var magicCost:Int;
     public var powerCost:Int;
     public var scope:Int;
@@ -34,14 +34,6 @@ class Skill
         effects = [];
     }
     
-}
-
-@:enum
-abstract SkillType(Int) from Int to Int
-{
-    var TYPE_NONE:Int = 0;
-    var TYPE_SPECIAL:Int = 1;
-    var TYPE_MAGIC:Int = 2;
 }
 
 @:enum

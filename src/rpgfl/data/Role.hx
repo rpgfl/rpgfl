@@ -14,9 +14,9 @@ class Role
     public var attack(get, null):Int;
     function get_attack() return _attack;
     
-    private var _defense:Int;
-    public var defense(get, null):Int;
-    function get_defense() return _defense;
+    private var _defence:Int;
+    public var defence(get, null):Int;
+    function get_defence() return _defence;
     
     private var _currentLevel:Int;
     public var currentLevel(get, null):Int;
@@ -30,9 +30,9 @@ class Role
     public var magic(get, null):Int;
     function get_magic() return _magic;
     
-    private var _magicDefense:Int;
-    public var magicDefense(get, null):Int;
-    function get_magicDefense() return _magicDefense;
+    private var _magicDefence:Int;
+    public var magicDefence(get, null):Int;
+    function get_magicDefence() return _magicDefence;
     
     private var _agility:Int;
     public var agility(get, null):Int;

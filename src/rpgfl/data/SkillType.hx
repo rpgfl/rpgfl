@@ -1,13 +1,13 @@
 package rpgfl.data;
 
-public class Element
+class SkillType
 {
     
     public var id:Int;
     public var systemName:String;
     public var displayName:String;
     
-    public function new()
+    public function new() 
     {
         
     }
