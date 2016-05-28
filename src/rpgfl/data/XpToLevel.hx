@@ -17,9 +17,4 @@ class XpToLevel
         return XP_TO_NEXT;
     }
     
-    public function new() 
-    {
-        
-    }
-    
 }
