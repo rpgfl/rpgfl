@@ -2,6 +2,7 @@ package rpgfl.display;
 import haxe.Constraints.Function;
 import openfl.Assets;
 import openfl.display.BitmapData;
+import openfl.display.Sprite;
 import openfl.geom.Point;
 import rpgfl.events.Event;
 import rpgfl.events.Command;
@@ -10,7 +11,7 @@ import hscript.Parser;
 import hscript.Interp;
 import rpgfl.events.EventScript;
 
-class Map
+class Map extends IGame
 {
     
     private var _interp:Interp;
@@ -21,9 +22,7 @@ class Map
     public var tilesetId:Int;
     public var width:Int;
     public var height:Int;
-    public var cellWidth:Int;
-    public var cellHeight:Int;
-    public var groundData:Array<Array<Int>>;
+    public var tileData:Array<Array<Int>>;
     public var note:String;
     
     public var scrollType:Int;
@@ -37,6 +36,7 @@ class Map
     public var eventQueue:Array<Command>;
     
     private var result:Dynamic;
+    private var pauseEventProcessing:Bool;
     
     public function new()
     {
@@ -44,10 +44,11 @@ class Map
         
         musicPlaylist = [];
         ambiencePlaylist = [];
-        groundData = [[]];
+        tileData = [[]];
         regions = [[]];
         events = [];
         eventQueue = [];
+        pauseEventProcessing = false;
         
         _interp = new Interp();
         _parser = new Parser();
@@ -131,9 +132,22 @@ class Map
         _interp.variables.set("playerControl", playerControl);
     }
     
+    public function draw(state:Sprite)
+    {
+        
+    }
+    
+    public function update(time:Int)
+    {
+        
+    }
+    
     private function processEvents()
     {
         var c:Command = getNextCommand();
+        
+        if (c == null)
+            return;
         
         switch (c.type)
         {
@@ -300,6 +314,9 @@ class Map
             command = eventQueue[0];
             eventQueue.splice(0, 1);
         }
+        else
+            return null;
+        
         return command;
     }
     
