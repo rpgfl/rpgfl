@@ -11,7 +11,7 @@ import hscript.Parser;
 import hscript.Interp;
 import rpgfl.events.EventScript;
 
-class Map extends IGame
+class Map implements IGame
 {
     
     private var _interp:Interp;
