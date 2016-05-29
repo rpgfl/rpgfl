@@ -1,14 +1,21 @@
 package rpgfl.display;
 import haxe.Constraints.Function;
+import haxe.Json;
+
+import hscript.Parser;
+import hscript.Interp;
+
 import openfl.Assets;
 import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.geom.Point;
+import openfl.display.Tilemap;
+import openfl.display.TilemapLayer;
+import openfl.display.Tileset;
+
 import rpgfl.events.Event;
 import rpgfl.events.Command;
 import rpgfl.events.CommandType;
-import hscript.Parser;
-import hscript.Interp;
 import rpgfl.events.EventScript;
 
 class Map implements IGame
@@ -19,10 +26,8 @@ class Map implements IGame
 
     public var name:String;
     public var displayName:String;
-    public var tilesetId:Int;
     public var width:Int;
     public var height:Int;
-    public var tileData:Array<Array<Int>>;
     public var note:String;
     
     public var scrollType:Int;
@@ -37,18 +42,24 @@ class Map implements IGame
     
     private var result:Dynamic;
     private var pauseEventProcessing:Bool;
+    private var _cameraOffsetX:Int;
+    private var _cameraOffsetY:Int;
+    private var _map:Tilemap;
+    private var _mapFile:String;
     
-    public function new()
+    public function new(mapFile:String)
     {
         super();
         
         musicPlaylist = [];
         ambiencePlaylist = [];
-        tileData = [[]];
         regions = [[]];
         events = [];
         eventQueue = [];
         pauseEventProcessing = false;
+        
+        _mapFile = mapFile;
+        
         
         _interp = new Interp();
         _parser = new Parser();
