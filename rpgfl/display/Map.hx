@@ -2,6 +2,8 @@ package rpgfl.display;
 import haxe.Constraints.Function;
 import haxe.Json;
 import openfl.Lib;
+import openfl.display.Bitmap;
+import openfl.geom.Rectangle;
 import rpgfl.system.DataParser;
 
 import hscript.Parser;
@@ -51,11 +53,19 @@ class Map implements IGame
     private var pauseEventProcessing:Bool;
     private var _cameraOffsetX:Int;
     private var _cameraOffsetY:Int;
+    #if tilemap
     private var _map:Tilemap;
     public var map(get, null):Tilemap;
     function get_map() return _map;
+    #else
+    private var _map:Bitmap;
+    public var map(get, null):Bitmap;
+    function get_map() return _map;
+    #end
     
-    private var _mapData:MapData;
+    
+    
+    private var _mapData:Dynamic;
     private var _mapFile:String;
     private var _layerFiles:Array<String>;
     
@@ -155,8 +165,7 @@ class Map implements IGame
     
     public function draw(state:Sprite)
     {
-        state.addChild(map);
-        
+        #if tilemap
         for (i in 0..._map.numLayers)
         {
             var layer = _map.getLayerAt(i);
@@ -178,6 +187,9 @@ class Map implements IGame
                 column = 0;
             }
         }
+        #end
+        
+        state.addChild(map);
     }
     
     public function update(time:Int)
@@ -187,19 +199,42 @@ class Map implements IGame
     
     public function switchMap(file:String)
     {
-        _mapFile = file;
+        _mapFile = file; 
         _mapData = Json.parse(Assets.getText(_mapFile));
-        _map = new Tilemap(Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
+        
+        var mapWidth:Int = Std.int(_mapData.width * _mapData.tilewidth);
+        var mapHeight:Int = Std.int(_mapData.height * _mapData.tileheight);
+        trace(mapWidth, mapHeight);
+        
+        #if tilemap
+        _map = new Tilemap(mapWidth, mapHeight);
         
         _layerFiles = [];
         for (i in 0..._mapData.layers.length)
         {
-            var layerData = _mapData.layers[i];
+            var layerData:Dynamic = _mapData.layers[i];
             var layer = DataParser.loadLayerFromCSV(layerData.tileset, _mapData.tilewidth, _mapData.tileheight);
             _map.addLayer(layer);
             
             _layerFiles.push(layerData.file);
         }
+        
+        #else
+        
+        _map = new Bitmap();
+        
+        _map.bitmapData = new BitmapData(mapWidth, mapHeight);
+        
+        for (i in 0..._mapData.layers.length)
+        {
+            var layerData:Dynamic = _mapData.layers[i];
+            var layer = DataParser.loadLayerFromCSV(layerData.file, layerData.tileset, _mapData.tilewidth, _mapData.tileheight, mapWidth, mapHeight);
+            _map.bitmapData.copyPixels(layer, new Rectangle(0, 0, layer.width, layer.height), new Point(0, 0));
+        }
+        
+        #end
+        
+        
     }
     
     private function processEvents()
