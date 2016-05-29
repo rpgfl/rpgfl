@@ -1,0 +1,16 @@
+{
+    "width": 140,
+    "height": 140,
+    "tilewidth": 32,
+    "tileheight": 32,
+    "layers": [
+        {
+            "file": "maps/WorldMap_Ground.csv",
+            "tileset": "img/Ground.png"
+        },
+        {
+            "file": "maps/WorldMap_Blending.csv",
+            "tileset": "img/GroundBlendingTileset.png"
+        }
+    ]
+}

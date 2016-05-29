@@ -2,6 +2,8 @@ package rpgfl.events;
 import haxe.Constraints.Function;
 import openfl.geom.Point;
 
+using rpgfl.events.CommandType;
+
 class EventScript
 {
     

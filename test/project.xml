@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	<meta title="RPGFL Test" package="rpgfl.test" version="1.0.0" company="tienery" />
+	
+	<app main="Main" file="rpgfl_test" path="bin" />
+	
+	<window background="#FFFFFF" fps="60" />
+	<window width="800" height="480" unless="mobile" />
+	<window orientation="landscape" vsync="false" antialiasing="0" if="cpp" />
+	
+	<source path="./" />
+	<haxelib name="openfl" />
+    <haxelib name="hscript" />
+	<haxelib name="actuate" />
+    <haxelib name="rpgfl" />
+	
+	<icon path="../assets/openfl.svg" />
+	<assets path="../assets/img" rename="img" />
+    <assets path="../assets/info" rename="info" />
+    <assets path="../assets/maps" rename="maps" />
+	
+	<!-- optimize output
+	<haxeflag name="-dce full" /> -->
+	
+</project>

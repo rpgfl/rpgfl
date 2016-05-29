@@ -1,9 +1,13 @@
 package rpgfl.display;
 import haxe.Constraints.Function;
 import haxe.Json;
+import openfl.Lib;
+import rpgfl.system.DataParser;
 
 import hscript.Parser;
 import hscript.Interp;
+
+import motion.Actuate;
 
 import openfl.Assets;
 import openfl.display.BitmapData;
@@ -12,6 +16,9 @@ import openfl.geom.Point;
 import openfl.display.Tilemap;
 import openfl.display.TilemapLayer;
 import openfl.display.Tileset;
+import openfl.display.Tile;
+import openfl.utils.Timer;
+import openfl.events.TimerEvent;
 
 import rpgfl.events.Event;
 import rpgfl.events.Command;
@@ -45,112 +52,154 @@ class Map implements IGame
     private var _cameraOffsetX:Int;
     private var _cameraOffsetY:Int;
     private var _map:Tilemap;
+    public var map(get, null):Tilemap;
+    function get_map() return _map;
+    
+    private var _mapData:MapData;
     private var _mapFile:String;
+    private var _layerFiles:Array<String>;
     
     public function new(mapFile:String)
-    {
-        super();
-        
+    {   
         musicPlaylist = [];
         ambiencePlaylist = [];
         regions = [[]];
         events = [];
         eventQueue = [];
+        _layerFiles = [];
         pauseEventProcessing = false;
         
-        _mapFile = mapFile;
-        
+        switchMap(mapFile);
         
         _interp = new Interp();
         _parser = new Parser();
         
-        _parser.allowJSON = true;
-        _interp.variables.set("showText", showText);
-        _interp.variables.set("showChoices", showChoices);
-        _interp.variables.set("showScrollingText", showScrollingText);
-        _interp.variables.set("startTimer", startTimer);
-        _interp.variables.set("stopTimer", stopTimer);
-        _interp.variables.set("changeGold", changeGold);
-        _interp.variables.set("changeItems", changeItems);
-        _interp.variables.set("changePartyMember", changePartyMember);
-        _interp.variables.set("changeHp", changeHp);
-        _interp.variables.set("changeMp", changeMp);
-        _interp.variables.set("changeState", changeState);
-        _interp.variables.set("recoverAll", recoverAll);
-        _interp.variables.set("changeExp", changeExp);
-        _interp.variables.set("changeLevel", changeLevel);
-        _interp.variables.set("changeSkills", changeSkills);
-        _interp.variables.set("changeEquipment", changeEquipment);
-        _interp.variables.set("changeName", changeName);
-        _interp.variables.set("changeRole", changeRole);
-        _interp.variables.set("transferPlayer", transferPlayer);
-        _interp.variables.set("setVehicleLocation", setVehicleLocation);
-        _interp.variables.set("setEventLocation", setEventLocation);
-        _interp.variables.set("scrollMap", scrollMap);
-        _interp.variables.set("setMoveRoute", setMoveRoute);
-        _interp.variables.set("enterVehicle", enterVehicle);
-        _interp.variables.set("showBalloon", showBalloon);
-        _interp.variables.set("fadeOutScreen", fadeOutScreen);
-        _interp.variables.set("fadeInScreen", fadeInScreen);
-        _interp.variables.set("tintScreen", tintScreen);
-        _interp.variables.set("flashScreen", flashScreen);
-        _interp.variables.set("shakeScreen", shakeScreen);
-        _interp.variables.set("showPicture", showPicture);
-        _interp.variables.set("movePicture", movePicture);
-        _interp.variables.set("rotatePicture", rotatePicture);
-        _interp.variables.set("tintPicture", tintPicture);
-        _interp.variables.set("erasePicture", erasePicture);
-        _interp.variables.set("setWeatherEffect", setWeatherEffect);
-        _interp.variables.set("playBackgroundMusic", playBackgroundMusic);
-        _interp.variables.set("fadeoutBackgroundMusic", fadeoutBackgroundMusic);
-        _interp.variables.set("saveBackgroundMusic", saveBackgroundMusic);
-        _interp.variables.set("replayBackgroundMusic", replayBackgroundMusic);
-        _interp.variables.set("playBackgroundSound", playBackgroundSound);
-        _interp.variables.set("fadeoutBackgroundSound", fadeoutBackgroundSound);
-        _interp.variables.set("playMusicEffect", playMusicEffect);
-        _interp.variables.set("playSoundEffect", playSoundEffect);
-        _interp.variables.set("stopSoundEffect", stopSoundEffect);
-        _interp.variables.set("startBattle", startBattle);
-        _interp.variables.set("openShop", openShop);
-        _interp.variables.set("openNameInput", openNameInput);
-        _interp.variables.set("openMenuScreen", openMenuScreen);
-        _interp.variables.set("openSaveScreen", openSaveScreen);
-        _interp.variables.set("gameOver", gameOver);
-        _interp.variables.set("openTitleScreen", openTitleScreen);
-        _interp.variables.set("changeBattleMusic", changeBattleMusic);
-        _interp.variables.set("changeBattleEndMusic", changeBattleEndMusic);
-        _interp.variables.set("changeSaveAccess", changeSaveAccess);
-        _interp.variables.set("changeMenuAccess", changeMenuAccess);
-        _interp.variables.set("changeEncounter", changeEncounter);
-        _interp.variables.set("changeFormation", changeFormation);
-        _interp.variables.set("changeWindowColor", changeWindowColor);
-        _interp.variables.set("changeActorGraphic", changeActorGraphic);
-        _interp.variables.set("changeVehicleGraphic", changeVehicleGraphic);
-        _interp.variables.set("playMovie", playMovie);
-        _interp.variables.set("changeMapNameDisplay", changeMapNameDisplay);
-        _interp.variables.set("changeTileset", changeTileset);
-        _interp.variables.set("changeBattleback", changeBattleback);
-        _interp.variables.set("changeParallaxBack", changeParallaxBack);
-        _interp.variables.set("changeEnemyHp", changeEnemyHp);
-        _interp.variables.set("changeEnemyMp", changeEnemyMp);
-        _interp.variables.set("changeEnemyState", changeEnemyState);
-        _interp.variables.set("enemyRecoverAll", enemyRecoverAll);
-        _interp.variables.set("enemyAppear", enemyAppear);
-        _interp.variables.set("enemyTransform", enemyTransform);
-        _interp.variables.set("showBattleAnimation", showBattleAnimation);
-        _interp.variables.set("forceAction", forceAction);
-        _interp.variables.set("abortBattle", abortBattle);
-        _interp.variables.set("playerControl", playerControl);
+        //_parser.allowJSON = true;
+        //_interp.variables.set("showText", showText);
+        //_interp.variables.set("showChoices", showChoices);
+        //_interp.variables.set("showScrollingText", showScrollingText);
+        //_interp.variables.set("startTimer", startTimer);
+        //_interp.variables.set("stopTimer", stopTimer);
+        //_interp.variables.set("changeGold", changeGold);
+        //_interp.variables.set("changeItems", changeItems);
+        //_interp.variables.set("changePartyMember", changePartyMember);
+        //_interp.variables.set("changeHp", changeHp);
+        //_interp.variables.set("changeMp", changeMp);
+        //_interp.variables.set("changeState", changeState);
+        //_interp.variables.set("recoverAll", recoverAll);
+        //_interp.variables.set("changeExp", changeExp);
+        //_interp.variables.set("changeLevel", changeLevel);
+        //_interp.variables.set("changeSkills", changeSkills);
+        //_interp.variables.set("changeEquipment", changeEquipment);
+        //_interp.variables.set("changeName", changeName);
+        //_interp.variables.set("changeRole", changeRole);
+        //_interp.variables.set("transferPlayer", transferPlayer);
+        //_interp.variables.set("setVehicleLocation", setVehicleLocation);
+        //_interp.variables.set("setEventLocation", setEventLocation);
+        //_interp.variables.set("scrollMap", scrollMap);
+        //_interp.variables.set("setMoveRoute", setMoveRoute);
+        //_interp.variables.set("enterVehicle", enterVehicle);
+        //_interp.variables.set("showBalloon", showBalloon);
+        //_interp.variables.set("fadeOutScreen", fadeOutScreen);
+        //_interp.variables.set("fadeInScreen", fadeInScreen);
+        //_interp.variables.set("tintScreen", tintScreen);
+        //_interp.variables.set("flashScreen", flashScreen);
+        //_interp.variables.set("shakeScreen", shakeScreen);
+        //_interp.variables.set("showPicture", showPicture);
+        //_interp.variables.set("movePicture", movePicture);
+        //_interp.variables.set("rotatePicture", rotatePicture);
+        //_interp.variables.set("tintPicture", tintPicture);
+        //_interp.variables.set("erasePicture", erasePicture);
+        //_interp.variables.set("setWeatherEffect", setWeatherEffect);
+        //_interp.variables.set("playBackgroundMusic", playBackgroundMusic);
+        //_interp.variables.set("fadeoutBackgroundMusic", fadeoutBackgroundMusic);
+        //_interp.variables.set("saveBackgroundMusic", saveBackgroundMusic);
+        //_interp.variables.set("replayBackgroundMusic", replayBackgroundMusic);
+        //_interp.variables.set("playBackgroundSound", playBackgroundSound);
+        //_interp.variables.set("fadeoutBackgroundSound", fadeoutBackgroundSound);
+        //_interp.variables.set("playMusicEffect", playMusicEffect);
+        //_interp.variables.set("playSoundEffect", playSoundEffect);
+        //_interp.variables.set("stopSoundEffect", stopSoundEffect);
+        //_interp.variables.set("startBattle", startBattle);
+        //_interp.variables.set("openShop", openShop);
+        //_interp.variables.set("openNameInput", openNameInput);
+        //_interp.variables.set("openMenuScreen", openMenuScreen);
+        //_interp.variables.set("openSaveScreen", openSaveScreen);
+        //_interp.variables.set("gameOver", gameOver);
+        //_interp.variables.set("openTitleScreen", openTitleScreen);
+        //_interp.variables.set("changeBattleMusic", changeBattleMusic);
+        //_interp.variables.set("changeBattleEndMusic", changeBattleEndMusic);
+        //_interp.variables.set("changeSaveAccess", changeSaveAccess);
+        //_interp.variables.set("changeMenuAccess", changeMenuAccess);
+        //_interp.variables.set("changeEncounter", changeEncounter);
+        //_interp.variables.set("changeFormation", changeFormation);
+        //_interp.variables.set("changeWindowColor", changeWindowColor);
+        //_interp.variables.set("changeActorGraphic", changeActorGraphic);
+        //_interp.variables.set("changeVehicleGraphic", changeVehicleGraphic);
+        //_interp.variables.set("playMovie", playMovie);
+        //_interp.variables.set("changeMapNameDisplay", changeMapNameDisplay);
+        //_interp.variables.set("changeTileset", changeTileset);
+        //_interp.variables.set("changeBattleback", changeBattleback);
+        //_interp.variables.set("changeParallaxBack", changeParallaxBack);
+        //_interp.variables.set("changeEnemyHp", changeEnemyHp);
+        //_interp.variables.set("changeEnemyMp", changeEnemyMp);
+        //_interp.variables.set("changeEnemyState", changeEnemyState);
+        //_interp.variables.set("enemyRecoverAll", enemyRecoverAll);
+        //_interp.variables.set("enemyAppear", enemyAppear);
+        //_interp.variables.set("enemyTransform", enemyTransform);
+        //_interp.variables.set("showBattleAnimation", showBattleAnimation);
+        //_interp.variables.set("forceAction", forceAction);
+        //_interp.variables.set("abortBattle", abortBattle);
+        //_interp.variables.set("playerControl", playerControl);
     }
     
     public function draw(state:Sprite)
     {
+        state.addChild(map);
         
+        for (i in 0..._map.numLayers)
+        {
+            var layer = _map.getLayerAt(i);
+            var lines:Array<String> = Assets.getText(_layerFiles[i]).split('\n');
+            var row:Int = 0;
+            var column:Int = 0;
+            for (line in lines)
+            {
+                for (cell in line.split(','))
+                {
+                    var id:Int = Std.parseInt(cell);
+                    var t = new Tile();
+                    t.id = id;
+                    t.x = row;
+                    t.y = column++;
+                    layer.addTile(t);
+                }
+                row++;
+                column = 0;
+            }
+        }
     }
     
     public function update(time:Int)
     {
         
+    }
+    
+    public function switchMap(file:String)
+    {
+        _mapFile = file;
+        _mapData = Json.parse(Assets.getText(_mapFile));
+        _map = new Tilemap(Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
+        
+        _layerFiles = [];
+        for (i in 0..._mapData.layers.length)
+        {
+            var layerData = _mapData.layers[i];
+            var layer = DataParser.loadLayerFromCSV(layerData.tileset, _mapData.tilewidth, _mapData.tileheight);
+            _map.addLayer(layer);
+            
+            _layerFiles.push(layerData.file);
+        }
     }
     
     private function processEvents()
@@ -340,9 +389,9 @@ class Map implements IGame
         eventQueue.push(EventScript.showText(portraitId, text, position, background));
     }
     
-    private function showChoices(values:Array<String>, cancelId:Int = 1)
+    private function showChoices(values:Array<String>, confirms:Array<Function>, cancelId:Int = 1)
     {
-        eventQueue.push(EventScript.showChoices(values, cancelId));
+        eventQueue.push(EventScript.showChoices(values, confirms, cancelId));
     }
     
     private function showScrollingText(text:String, speed:Int = 2, noFastForward:Bool = false)

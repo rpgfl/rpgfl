@@ -15,9 +15,6 @@ class RPG extends Sprite
     {
         super();
         
-        map = new Map();
-        map.draw(this);
-        
         _lastTime = 0;
         
         addEventListener(Event.ENTER_FRAME, _rpg_onEnterFrame);
@@ -26,8 +23,24 @@ class RPG extends Sprite
     private function _rpg_onEnterFrame(e:Event)
     {
         var delta = Lib.getTimer() - _lastTime;
-        map.update(delta);
+        
+        if (map != null)
+            map.update(delta);
+        
         _lastTime = Lib.getTimer();
+    }
+    
+    public function showMap(file:String)
+    {
+        if (map == null)
+        {
+            map = new Map(file);
+            map.draw(this);
+        }
+        else
+        {
+            map.switchMap(file);
+        }
     }
     
 }
