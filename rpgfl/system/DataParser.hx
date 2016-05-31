@@ -13,9 +13,8 @@ import openfl.geom.Rectangle;
 
 class DataParser
 {
-
-    #if tilemap
-    public static function loadLayerFromCSV(map:Tilemap, mapData:Dynamic)
+    
+    public static function loadLayersFromCSV(map:Tilemap, mapData:Dynamic)
     {
         var cellWidth:Int = mapData.tilewidth;
         var cellHeight:Int = mapData.tileheight;
@@ -35,7 +34,7 @@ class DataParser
                 {
                     var _x = x * cellWidth;
                     var _y = y * cellHeight;
-                    var id = set.addRect(new Rectangle(_x, _y, cellWidth, cellHeight));
+                    set.addRect(new Rectangle(_x, _y, cellWidth, cellHeight));
                 }
             }
             
@@ -59,7 +58,6 @@ class DataParser
                     var _y = row * cellWidth;
                     var _x = column * cellHeight;
                     var t = new Tile(id, _x, _y);
-                    //trace(id, _y, _x);
                     column++;
                     layer.addTile(t);
                 }
@@ -70,39 +68,5 @@ class DataParser
             map.addLayer(layer);
         }
     }
-    #else
-    public static function loadLayerFromCSV(file:String, tilesetGraphic:String, cellWidth:Int, cellHeight:Int, width:Int, height:Int):BitmapData
-    {
-        var set = Assets.getBitmapData(tilesetGraphic);
-        
-        var cellsX:Int = Std.int(set.width / cellWidth);
-        var cellsY:Int = Std.int(set.height / cellHeight);
-        
-        var indices:Array<Point> = [];
-        for (x in 0...cellsX)
-            for (y in 0...cellsY)
-                indices.push(new Point(x * cellWidth, y * cellHeight));
-        
-        var lines:Array<String> = Assets.getText(file).split('\n');
-        
-        var layer = new BitmapData(width, height);
-        
-        var row:Int = 0;
-        var column:Int = 0;
-        for (line in lines)
-        {
-            for (cell in line.split(','))
-            {
-                var index:Int = Std.parseInt(cell);
-                
-                layer.copyPixels(set, new Rectangle(indices[index].x, indices[index].y, cellWidth, cellHeight), new Point(column++, row));
-            }
-            row++;
-            column = 0;
-        }
-        
-        return layer;
-    }
-    #end
     
 }

@@ -47,7 +47,7 @@
     <hidden path="obj" />
   </hiddenPaths>
   <!-- Executed before build -->
-  <preBuildCommand>"$(CompilerPath)/haxelib" run openfl build test/project.xml $(TargetBuild) -Dtilemap</preBuildCommand>
+  <preBuildCommand>"$(CompilerPath)/haxelib" run openfl build test/project.xml $(TargetBuild)</preBuildCommand>
   <!-- Executed after build -->
   <postBuildCommand alwaysRun="False" />
   <!-- Other project options -->

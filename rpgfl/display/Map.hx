@@ -53,15 +53,10 @@ class Map implements IGame
     private var pauseEventProcessing:Bool;
     private var _cameraOffsetX:Int;
     private var _cameraOffsetY:Int;
-    #if tilemap
+    
     private var _map:Tilemap;
     public var map(get, null):Tilemap;
     function get_map() return _map;
-    #else
-    private var _map:Sprite;
-    public var map(get, null):Sprite;
-    function get_map() return _map;
-    #end
     
     private var _mapWidth:Int;
     public var mapWidth(get, null):Int;
@@ -171,10 +166,6 @@ class Map implements IGame
     
     public function draw(state:Sprite)
     {
-        #if tilemap
-        
-        #end
-        
         state.addChild(map);
     }
     
@@ -191,28 +182,9 @@ class Map implements IGame
         _mapWidth = Std.int(_mapData.width * _mapData.tilewidth);
         _mapHeight = Std.int(_mapData.height * _mapData.tileheight);
         
-        #if tilemap
         _map = new Tilemap(_mapWidth, _mapHeight);
         
-        DataParser.loadLayerFromCSV(_map, _mapData);
-        #else
-        
-        _map = new Sprite();
-        
-        for (i in 0..._mapData.layers.length)
-        {
-            var layerData:Dynamic = _mapData.layers[i];
-            var layer = DataParser.loadLayerFromCSV(layerData.file, layerData.tileset, _mapData.tilewidth, _mapData.tileheight, mapWidth, mapHeight);
-            var bmp = new Bitmap(layer);
-            
-            _map.addChild(bmp);
-        }
-        
-        _map.width = _mapWidth;
-        _map.height = _mapHeight;
-        #end
-        
-        
+        DataParser.loadLayersFromCSV(_map, _mapData);
     }
     
     private function processEvents()
