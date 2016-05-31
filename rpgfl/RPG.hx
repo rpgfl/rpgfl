@@ -9,7 +9,7 @@ class RPG extends Sprite
 {
     
     private var _lastTime:Int;
-    private var map:Map;
+    public var map:Map;
     
     public function new() 
     {
@@ -36,6 +36,9 @@ class RPG extends Sprite
         {
             map = new Map(file);
             map.draw(this);
+            
+            width = map.mapWidth;
+            height = map.mapHeight;
         }
         else
         {

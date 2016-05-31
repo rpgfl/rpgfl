@@ -58,12 +58,18 @@ class Map implements IGame
     public var map(get, null):Tilemap;
     function get_map() return _map;
     #else
-    private var _map:Bitmap;
-    public var map(get, null):Bitmap;
+    private var _map:Sprite;
+    public var map(get, null):Sprite;
     function get_map() return _map;
     #end
     
+    private var _mapWidth:Int;
+    public var mapWidth(get, null):Int;
+    function get_mapWidth() return _mapWidth;
     
+    private var _mapHeight:Int;
+    public var mapHeight(get, null):Int;
+    function get_mapHeight() return _mapHeight;
     
     private var _mapData:Dynamic;
     private var _mapFile:String;
@@ -166,27 +172,7 @@ class Map implements IGame
     public function draw(state:Sprite)
     {
         #if tilemap
-        for (i in 0..._map.numLayers)
-        {
-            var layer = _map.getLayerAt(i);
-            var lines:Array<String> = Assets.getText(_layerFiles[i]).split('\n');
-            var row:Int = 0;
-            var column:Int = 0;
-            for (line in lines)
-            {
-                for (cell in line.split(','))
-                {
-                    var id:Int = Std.parseInt(cell);
-                    var t = new Tile();
-                    t.id = id;
-                    t.x = row;
-                    t.y = column++;
-                    layer.addTile(t);
-                }
-                row++;
-                column = 0;
-            }
-        }
+        
         #end
         
         state.addChild(map);
@@ -202,36 +188,28 @@ class Map implements IGame
         _mapFile = file; 
         _mapData = Json.parse(Assets.getText(_mapFile));
         
-        var mapWidth:Int = Std.int(_mapData.width * _mapData.tilewidth);
-        var mapHeight:Int = Std.int(_mapData.height * _mapData.tileheight);
-        trace(mapWidth, mapHeight);
+        _mapWidth = Std.int(_mapData.width * _mapData.tilewidth);
+        _mapHeight = Std.int(_mapData.height * _mapData.tileheight);
         
         #if tilemap
-        _map = new Tilemap(mapWidth, mapHeight);
+        _map = new Tilemap(_mapWidth, _mapHeight);
         
-        _layerFiles = [];
-        for (i in 0..._mapData.layers.length)
-        {
-            var layerData:Dynamic = _mapData.layers[i];
-            var layer = DataParser.loadLayerFromCSV(layerData.tileset, _mapData.tilewidth, _mapData.tileheight);
-            _map.addLayer(layer);
-            
-            _layerFiles.push(layerData.file);
-        }
-        
+        DataParser.loadLayerFromCSV(_map, _mapData);
         #else
         
-        _map = new Bitmap();
-        
-        _map.bitmapData = new BitmapData(mapWidth, mapHeight);
+        _map = new Sprite();
         
         for (i in 0..._mapData.layers.length)
         {
             var layerData:Dynamic = _mapData.layers[i];
             var layer = DataParser.loadLayerFromCSV(layerData.file, layerData.tileset, _mapData.tilewidth, _mapData.tileheight, mapWidth, mapHeight);
-            _map.bitmapData.copyPixels(layer, new Rectangle(0, 0, layer.width, layer.height), new Point(0, 0));
+            var bmp = new Bitmap(layer);
+            
+            _map.addChild(bmp);
         }
         
+        _map.width = _mapWidth;
+        _map.height = _mapHeight;
         #end
         
         
