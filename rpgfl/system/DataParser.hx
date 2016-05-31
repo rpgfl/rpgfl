@@ -29,13 +29,13 @@ class DataParser
             var cellsX:Int = Std.int(set.bitmapData.width / cellWidth);
             var cellsY:Int = Std.int(set.bitmapData.height / cellHeight);
             
-            for (x in 0...cellsX)
+            for (y in 0...cellsY)
             {
-                for (y in 0...cellsY)
+                for (x in 0...cellsX)
                 {
                     var _x = x * cellWidth;
                     var _y = y * cellHeight;
-                    set.addRect(new Rectangle(_x, _y, cellWidth, cellHeight));
+                    var id = set.addRect(new Rectangle(_x, _y, cellWidth, cellHeight));
                 }
             }
             
@@ -50,7 +50,17 @@ class DataParser
                 for (cell in line.split(','))
                 {
                     var id:Int = Std.parseInt(cell);
-                    var t = new Tile(id, row, column++);
+                    if (id == -1)
+                    {
+                        column++;
+                        continue;
+                    }
+                    
+                    var _y = row * cellWidth;
+                    var _x = column * cellHeight;
+                    var t = new Tile(id, _x, _y);
+                    //trace(id, _y, _x);
+                    column++;
                     layer.addTile(t);
                 }
                 row++;

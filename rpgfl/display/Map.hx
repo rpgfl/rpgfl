@@ -185,7 +185,7 @@ class Map implements IGame
     
     public function switchMap(file:String)
     {
-        _mapFile = file; 
+        _mapFile = file;
         _mapData = Json.parse(Assets.getText(_mapFile));
         
         _mapWidth = Std.int(_mapData.width * _mapData.tilewidth);
