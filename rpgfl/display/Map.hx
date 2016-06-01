@@ -3,7 +3,10 @@ import haxe.Constraints.Function;
 import haxe.Json;
 import openfl.Lib;
 import openfl.display.Bitmap;
+import openfl.events.KeyboardEvent;
 import openfl.geom.Rectangle;
+import openfl.ui.Keyboard;
+import rpgfl.data.ItemInventoryType;
 import rpgfl.system.DataParser;
 
 import hscript.Parser;
@@ -53,6 +56,8 @@ class Map implements IGame
     private var pauseEventProcessing:Bool;
     private var _cameraOffsetX:Int;
     private var _cameraOffsetY:Int;
+    private var _playerOriginX:Int;
+    private var _playerOriginY:Int;
     
     private var _map:Tilemap;
     public var map(get, null):Tilemap;
@@ -70,6 +75,11 @@ class Map implements IGame
     private var _mapFile:String;
     private var _layerFiles:Array<String>;
     
+    private var _moveIntoSquareX:Int;
+    private var _moveIntoSquareY:Int;
+    private var _lastKeyPress:Int;
+    private var _keyDown:Bool;
+    
     public function new(mapFile:String)
     {   
         musicPlaylist = [];
@@ -79,6 +89,8 @@ class Map implements IGame
         eventQueue = [];
         _layerFiles = [];
         pauseEventProcessing = false;
+        _cameraOffsetX = 0;
+        _cameraOffsetY = 0;
         
         switchMap(mapFile);
         
@@ -167,11 +179,133 @@ class Map implements IGame
     public function draw(state:Sprite)
     {
         state.addChild(map);
+        
+        var player = new Sprite();
+        player.graphics.clear();
+        player.graphics.beginFill(0x999999);
+        player.graphics.drawRect(0, 0, 32, 32);
+        
+        state.addChild(player);
+        
+        _playerOriginX = Std.int((Lib.current.stage.stageWidth - 32) / 2);
+        _playerOriginY = Std.int((Lib.current.stage.stageHeight - 32) / 2);
+        
+        player.x = Math.floor(_playerOriginX / 32) * 32;
+        player.y = Math.floor(_playerOriginY / 32) * 32;
+        
+        Lib.current.stage.addEventListener(KeyboardEvent.KEY_DOWN, _stage_onKeyDown);
+        Lib.current.stage.addEventListener(KeyboardEvent.KEY_UP, _stage_onKeyUp);
     }
     
-    public function update(time:Int)
+    public function update(state:Sprite, time:Int)
     {
+        var speed = 0.15;
+        var deltaMoveValue = Std.int(time * speed);
         
+        if (_keyDown)
+        {
+            if (_lastKeyPress == Keyboard.W)
+            {
+                _cameraOffsetY += deltaMoveValue;
+            }
+            else if (_lastKeyPress == Keyboard.A)
+            {
+                _cameraOffsetX += deltaMoveValue;
+            }
+            else if (_lastKeyPress == Keyboard.S)
+            {
+                _cameraOffsetY -= deltaMoveValue;
+            }
+            else if (_lastKeyPress == Keyboard.D)
+            {
+                _cameraOffsetX -= deltaMoveValue;
+            }
+        }
+        else
+        {
+            if (_lastKeyPress == Keyboard.W)
+            {
+                if (_cameraOffsetY != _moveIntoSquareY)
+                {
+                    if (_cameraOffsetY + deltaMoveValue > _moveIntoSquareY)
+                    {
+                        _cameraOffsetY = _moveIntoSquareY;
+                    }
+                    else
+                        _cameraOffsetY += deltaMoveValue;
+                }
+            }
+            else if (_lastKeyPress == Keyboard.A)
+            {
+                if (_cameraOffsetX != _moveIntoSquareX)
+                {
+                    if (_cameraOffsetX + deltaMoveValue > _moveIntoSquareX)
+                    {
+                        _cameraOffsetX = _moveIntoSquareX;
+                    }
+                    else
+                        _cameraOffsetX += deltaMoveValue;
+                }
+            }
+            else if (_lastKeyPress == Keyboard.S)
+            {
+                if (_cameraOffsetY != _moveIntoSquareY)
+                {
+                    if (_cameraOffsetY - deltaMoveValue > _moveIntoSquareY)
+                    {
+                        _cameraOffsetY = _moveIntoSquareY;
+                    }
+                    else
+                        _cameraOffsetY -= deltaMoveValue;
+                }
+            }
+            else if (_lastKeyPress == Keyboard.D)
+            {
+                if (_cameraOffsetX != _moveIntoSquareX)
+                {
+                    if (_cameraOffsetX - deltaMoveValue > _moveIntoSquareX)
+                    {
+                        _cameraOffsetX = _moveIntoSquareX;
+                    }
+                    else
+                        _cameraOffsetX -= deltaMoveValue;
+                }
+            }
+        }
+        
+        map.x = _cameraOffsetX;
+        map.y = _cameraOffsetY;
+    }
+    
+    private function _stage_onKeyUp(e:KeyboardEvent)
+    {
+        _keyDown = false;
+        
+        _lastKeyPress = e.keyCode;
+        
+        if (e.keyCode == Keyboard.W)
+        {
+            _moveIntoSquareY = Math.floor(_cameraOffsetY / 32) * 32;
+        }
+        else if (e.keyCode == Keyboard.A)
+        {
+            _moveIntoSquareX = Math.floor(_cameraOffsetX / 32) * 32;
+        }
+        else if (e.keyCode == Keyboard.S)
+        {
+            _moveIntoSquareY = Math.floor(_cameraOffsetY / 32) * 32;
+        }
+        else if (e.keyCode == Keyboard.D)
+        {
+            _moveIntoSquareX = Math.floor(_cameraOffsetX / 32) * 32;
+        }
+    }
+    
+    private function _stage_onKeyDown(e:KeyboardEvent)
+    {
+        _keyDown = true;
+        
+        _lastKeyPress = e.keyCode;
     }
     
     public function switchMap(file:String)
