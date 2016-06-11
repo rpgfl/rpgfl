@@ -78,6 +78,7 @@ class Map implements IGame
     private var _moveIntoSquareX:Int;
     private var _moveIntoSquareY:Int;
     private var _lastKeyPress:Int;
+    private var _currentKeyPress:Int;
     private var _keyDown:Bool;
     
     public function new(mapFile:String)
@@ -197,6 +198,12 @@ class Map implements IGame
         Lib.current.stage.addEventListener(KeyboardEvent.KEY_UP, _stage_onKeyUp);
     }
     
+    public function setPlayerLocation(x:Int, y:Int)
+    {
+        _cameraOffsetX = Std.int(((Lib.current.stage.stageWidth - 32) / 2) - (x * 32));
+        _cameraOffsetY = Std.int(((Lib.current.stage.stageHeight - 32) / 2) - (y * 32));
+    }
+    
     public function update(state:Sprite, time:Int)
     {
         var speed = 0.15;
@@ -204,77 +211,94 @@ class Map implements IGame
         
         if (_keyDown)
         {
-            if (_lastKeyPress == Keyboard.W)
+            if (_currentKeyPress == Keyboard.W)
             {
-                _cameraOffsetY += deltaMoveValue;
+                if (_cameraOffsetX == _moveIntoSquareX || _cameraOffsetX == 0)
+                    _cameraOffsetY += deltaMoveValue;
+                else
+                    moveCameraPos(deltaMoveValue);
             }
-            else if (_lastKeyPress == Keyboard.A)
+            else if (_currentKeyPress == Keyboard.A)
             {
-                _cameraOffsetX += deltaMoveValue;
+                if (_cameraOffsetY == _moveIntoSquareY || _cameraOffsetY == 0)
+                    _cameraOffsetX += deltaMoveValue;
+                else
+                    moveCameraPos(deltaMoveValue);
             }
-            else if (_lastKeyPress == Keyboard.S)
+            else if (_currentKeyPress == Keyboard.S)
             {
-                _cameraOffsetY -= deltaMoveValue;
+                if (_cameraOffsetX == _moveIntoSquareX || _cameraOffsetX == 0)
+                    _cameraOffsetY -= deltaMoveValue;
+                else
+                    moveCameraPos(deltaMoveValue);
             }
-            else if (_lastKeyPress == Keyboard.D)
+            else if (_currentKeyPress == Keyboard.D)
             {
-                _cameraOffsetX -= deltaMoveValue;
+                if (_cameraOffsetY == _moveIntoSquareY || _cameraOffsetY == 0)
+                    _cameraOffsetX -= deltaMoveValue;
+                else
+                    moveCameraPos(deltaMoveValue);
             }
         }
         else
         {
-            if (_lastKeyPress == Keyboard.W)
-            {
-                if (_cameraOffsetY != _moveIntoSquareY)
-                {
-                    if (_cameraOffsetY + deltaMoveValue > _moveIntoSquareY)
-                    {
-                        _cameraOffsetY = _moveIntoSquareY;
-                    }
-                    else
-                        _cameraOffsetY += deltaMoveValue;
-                }
-            }
-            else if (_lastKeyPress == Keyboard.A)
-            {
-                if (_cameraOffsetX != _moveIntoSquareX)
-                {
-                    if (_cameraOffsetX + deltaMoveValue > _moveIntoSquareX)
-                    {
-                        _cameraOffsetX = _moveIntoSquareX;
-                    }
-                    else
-                        _cameraOffsetX += deltaMoveValue;
-                }
-            }
-            else if (_lastKeyPress == Keyboard.S)
-            {
-                if (_cameraOffsetY != _moveIntoSquareY)
-                {
-                    if (_cameraOffsetY - deltaMoveValue > _moveIntoSquareY)
-                    {
-                        _cameraOffsetY = _moveIntoSquareY;
-                    }
-                    else
-                        _cameraOffsetY -= deltaMoveValue;
-                }
-            }
-            else if (_lastKeyPress == Keyboard.D)
-            {
-                if (_cameraOffsetX != _moveIntoSquareX)
-                {
-                    if (_cameraOffsetX - deltaMoveValue > _moveIntoSquareX)
-                    {
-                        _cameraOffsetX = _moveIntoSquareX;
-                    }
-                    else
-                        _cameraOffsetX -= deltaMoveValue;
-                }
-            }
+            moveCameraPos(deltaMoveValue);
         }
         
         map.x = _cameraOffsetX;
         map.y = _cameraOffsetY;
+    }
+    
+    private function moveCameraPos(deltaMoveValue:Int)
+    {
+        if (_lastKeyPress == Keyboard.W)
+        {
+            if (_cameraOffsetY < _moveIntoSquareY)
+            {
+                if (_cameraOffsetY + deltaMoveValue > _moveIntoSquareY)
+                {
+                    _cameraOffsetY = _moveIntoSquareY;
+                }
+                else
+                    _cameraOffsetY += deltaMoveValue;
+            }
+        }
+        else if (_lastKeyPress == Keyboard.A)
+        {
+            if (_cameraOffsetX < _moveIntoSquareX)
+            {
+                if (_cameraOffsetX + deltaMoveValue > _moveIntoSquareX)
+                {
+                    _cameraOffsetX = _moveIntoSquareX;
+                }
+                else
+                    _cameraOffsetX += deltaMoveValue;
+            }
+        }
+        else if (_lastKeyPress == Keyboard.S)
+        {
+            if (_cameraOffsetY > _moveIntoSquareY)
+            {
+                if (_cameraOffsetY - deltaMoveValue < _moveIntoSquareY)
+                {
+                    _cameraOffsetY = _moveIntoSquareY;
+                }
+                else
+                    _cameraOffsetY -= deltaMoveValue;
+            }
+        }
+        else if (_lastKeyPress == Keyboard.D)
+        {
+            if (_cameraOffsetX > _moveIntoSquareX)
+            {
+                if (_cameraOffsetX - deltaMoveValue < _moveIntoSquareX)
+                {
+                    _cameraOffsetX = _moveIntoSquareX;
+                }
+                else
+                    _cameraOffsetX -= deltaMoveValue;
+            }
+        }
     }
     
     private function _stage_onKeyUp(e:KeyboardEvent)
@@ -285,11 +309,11 @@ class Map implements IGame
         
         if (e.keyCode == Keyboard.W)
         {
-            _moveIntoSquareY = Math.floor(_cameraOffsetY / 32) * 32;
+            _moveIntoSquareY = Math.ceil(_cameraOffsetY / 32) * 32;
         }
         else if (e.keyCode == Keyboard.A)
         {
-            _moveIntoSquareX = Math.floor(_cameraOffsetX / 32) * 32;
+            _moveIntoSquareX = Math.ceil(_cameraOffsetX / 32) * 32;
         }
         else if (e.keyCode == Keyboard.S)
         {
@@ -305,7 +329,7 @@ class Map implements IGame
     {
         _keyDown = true;
         
-        _lastKeyPress = e.keyCode;
+        _currentKeyPress = e.keyCode;
     }
     
     public function switchMap(file:String)

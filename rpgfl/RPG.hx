@@ -12,14 +12,18 @@ class RPG extends Sprite
 {
     
     private var _lastTime:Int;
+    private var _player:Player;
     
     public var map:Map;
     
-    public function new() 
+    public function new()
     {
         super();
         
         _lastTime = 0;
+        _player = new Player();
+        _player.tileX = 3;
+        _player.tileY = 0;
         
         addEventListener(Event.ENTER_FRAME, _rpg_onEnterFrame);
         Lib.current.stage.addEventListener(KeyboardEvent.KEY_DOWN, _stage_onKeyDown);
@@ -36,7 +40,6 @@ class RPG extends Sprite
         
         if (map != null)
         {
-            
             map.update(this, delta);
         }
         
@@ -49,6 +52,7 @@ class RPG extends Sprite
         {
             map = new Map(file);
             map.draw(this);
+            map.setPlayerLocation(_player.tileX, _player.tileY);
         }
         else
         {
