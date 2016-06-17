@@ -1,13 +1,6 @@
 package rpgfl.display;
 import haxe.Constraints.Function;
 import haxe.Json;
-import openfl.Lib;
-import openfl.display.Bitmap;
-import openfl.events.KeyboardEvent;
-import openfl.geom.Rectangle;
-import openfl.ui.Keyboard;
-import rpgfl.data.ItemInventoryType;
-import rpgfl.system.DataParser;
 
 import hscript.Parser;
 import hscript.Interp;
@@ -15,22 +8,30 @@ import hscript.Interp;
 import motion.Actuate;
 
 import openfl.Assets;
+import openfl.Lib;
 import openfl.display.BitmapData;
+import openfl.display.Bitmap;
 import openfl.display.Sprite;
-import openfl.geom.Point;
 import openfl.display.Tilemap;
 import openfl.display.TilemapLayer;
 import openfl.display.Tileset;
 import openfl.display.Tile;
-import openfl.utils.Timer;
 import openfl.events.TimerEvent;
+import openfl.geom.Rectangle;
+import openfl.geom.Point;
+import openfl.events.KeyboardEvent;
+import openfl.ui.Keyboard;
+import openfl.utils.Timer;
 
+import rpgfl.data.ItemInventoryType;
+import rpgfl.data.Tileset in RPGTileset;
 import rpgfl.events.Event;
 import rpgfl.events.Command;
 import rpgfl.events.CommandType;
 import rpgfl.events.EventScript;
+import rpgfl.system.DataParser;
 
-class Map implements IGame
+class Map
 {
     
     private var _interp:Interp;
@@ -54,14 +55,10 @@ class Map implements IGame
     
     private var result:Dynamic;
     private var pauseEventProcessing:Bool;
-    private var _cameraOffsetX:Int;
-    private var _cameraOffsetY:Int;
-    private var _playerOriginX:Int;
-    private var _playerOriginY:Int;
     
-    private var _map:Tilemap;
-    public var map(get, null):Tilemap;
-    function get_map() return _map;
+    private var _tilemap:Tilemap;
+    public var tilemap(get, null):Tilemap;
+    function get_tilemap() return _tilemap;
     
     private var _mapWidth:Int;
     public var mapWidth(get, null):Int;
@@ -74,12 +71,9 @@ class Map implements IGame
     private var _mapData:Dynamic;
     private var _mapFile:String;
     private var _layerFiles:Array<String>;
-    
-    private var _moveIntoSquareX:Int;
-    private var _moveIntoSquareY:Int;
-    private var _lastKeyPress:Int;
-    private var _currentKeyPress:Int;
-    private var _keyDown:Bool;
+    private var _tilesetData:Array<RPGTileset>;
+    public var tilesetData(get, null):Array<RPGTileset>;
+    function get_tilesetData() return _tilesetData;
     
     public function new(mapFile:String)
     {   
@@ -89,9 +83,8 @@ class Map implements IGame
         events = [];
         eventQueue = [];
         _layerFiles = [];
+        _tilesetData = [];
         pauseEventProcessing = false;
-        _cameraOffsetX = 0;
-        _cameraOffsetY = 0;
         
         switchMap(mapFile);
         
@@ -177,161 +170,6 @@ class Map implements IGame
         //_interp.variables.set("playerControl", playerControl);
     }
     
-    public function draw(state:Sprite)
-    {
-        state.addChild(map);
-        
-        var player = new Sprite();
-        player.graphics.clear();
-        player.graphics.beginFill(0x999999);
-        player.graphics.drawRect(0, 0, 32, 32);
-        
-        state.addChild(player);
-        
-        _playerOriginX = Std.int((Lib.current.stage.stageWidth - 32) / 2);
-        _playerOriginY = Std.int((Lib.current.stage.stageHeight - 32) / 2);
-        
-        player.x = Math.floor(_playerOriginX / 32) * 32;
-        player.y = Math.floor(_playerOriginY / 32) * 32;
-        
-        Lib.current.stage.addEventListener(KeyboardEvent.KEY_DOWN, _stage_onKeyDown);
-        Lib.current.stage.addEventListener(KeyboardEvent.KEY_UP, _stage_onKeyUp);
-    }
-    
-    public function setPlayerLocation(x:Int, y:Int)
-    {
-        _cameraOffsetX = Std.int(((Lib.current.stage.stageWidth - 32) / 2) - (x * 32));
-        _cameraOffsetY = Std.int(((Lib.current.stage.stageHeight - 32) / 2) - (y * 32));
-    }
-    
-    public function update(state:Sprite, time:Int)
-    {
-        var speed = 0.15;
-        var deltaMoveValue = Std.int(time * speed);
-        
-        if (_keyDown)
-        {
-            if (_currentKeyPress == Keyboard.W)
-            {
-                if (_cameraOffsetX == _moveIntoSquareX || _cameraOffsetX == 0)
-                    _cameraOffsetY += deltaMoveValue;
-                else
-                    moveCameraPos(deltaMoveValue);
-            }
-            else if (_currentKeyPress == Keyboard.A)
-            {
-                if (_cameraOffsetY == _moveIntoSquareY || _cameraOffsetY == 0)
-                    _cameraOffsetX += deltaMoveValue;
-                else
-                    moveCameraPos(deltaMoveValue);
-            }
-            else if (_currentKeyPress == Keyboard.S)
-            {
-                if (_cameraOffsetX == _moveIntoSquareX || _cameraOffsetX == 0)
-                    _cameraOffsetY -= deltaMoveValue;
-                else
-                    moveCameraPos(deltaMoveValue);
-            }
-            else if (_currentKeyPress == Keyboard.D)
-            {
-                if (_cameraOffsetY == _moveIntoSquareY || _cameraOffsetY == 0)
-                    _cameraOffsetX -= deltaMoveValue;
-                else
-                    moveCameraPos(deltaMoveValue);
-            }
-        }
-        else
-        {
-            moveCameraPos(deltaMoveValue);
-        }
-        
-        map.x = _cameraOffsetX;
-        map.y = _cameraOffsetY;
-    }
-    
-    private function moveCameraPos(deltaMoveValue:Int)
-    {
-        if (_lastKeyPress == Keyboard.W)
-        {
-            if (_cameraOffsetY < _moveIntoSquareY)
-            {
-                if (_cameraOffsetY + deltaMoveValue > _moveIntoSquareY)
-                {
-                    _cameraOffsetY = _moveIntoSquareY;
-                }
-                else
-                    _cameraOffsetY += deltaMoveValue;
-            }
-        }
-        else if (_lastKeyPress == Keyboard.A)
-        {
-            if (_cameraOffsetX < _moveIntoSquareX)
-            {
-                if (_cameraOffsetX + deltaMoveValue > _moveIntoSquareX)
-                {
-                    _cameraOffsetX = _moveIntoSquareX;
-                }
-                else
-                    _cameraOffsetX += deltaMoveValue;
-            }
-        }
-        else if (_lastKeyPress == Keyboard.S)
-        {
-            if (_cameraOffsetY > _moveIntoSquareY)
-            {
-                if (_cameraOffsetY - deltaMoveValue < _moveIntoSquareY)
-                {
-                    _cameraOffsetY = _moveIntoSquareY;
-                }
-                else
-                    _cameraOffsetY -= deltaMoveValue;
-            }
-        }
-        else if (_lastKeyPress == Keyboard.D)
-        {
-            if (_cameraOffsetX > _moveIntoSquareX)
-            {
-                if (_cameraOffsetX - deltaMoveValue < _moveIntoSquareX)
-                {
-                    _cameraOffsetX = _moveIntoSquareX;
-                }
-                else
-                    _cameraOffsetX -= deltaMoveValue;
-            }
-        }
-    }
-    
-    private function _stage_onKeyUp(e:KeyboardEvent)
-    {
-        _keyDown = false;
-        
-        _lastKeyPress = e.keyCode;
-        
-        if (e.keyCode == Keyboard.W)
-        {
-            _moveIntoSquareY = Math.ceil(_cameraOffsetY / 32) * 32;
-        }
-        else if (e.keyCode == Keyboard.A)
-        {
-            _moveIntoSquareX = Math.ceil(_cameraOffsetX / 32) * 32;
-        }
-        else if (e.keyCode == Keyboard.S)
-        {
-            _moveIntoSquareY = Math.floor(_cameraOffsetY / 32) * 32;
-        }
-        else if (e.keyCode == Keyboard.D)
-        {
-            _moveIntoSquareX = Math.floor(_cameraOffsetX / 32) * 32;
-        }
-    }
-    
-    private function _stage_onKeyDown(e:KeyboardEvent)
-    {
-        _keyDown = true;
-        
-        _currentKeyPress = e.keyCode;
-    }
-    
     public function switchMap(file:String)
     {
         _mapFile = file;
@@ -340,9 +178,21 @@ class Map implements IGame
         _mapWidth = Std.int(_mapData.width * _mapData.tilewidth);
         _mapHeight = Std.int(_mapData.height * _mapData.tileheight);
         
-        _map = new Tilemap(_mapWidth, _mapHeight);
+        _tilemap = new Tilemap(_mapWidth, _mapHeight);
         
-        DataParser.loadLayersFromCSV(_map, _mapData);
+        _tilesetData = DataParser.loadLayersFromCSV(_tilemap, _mapData);
+    }
+    
+    public function getTileAtPosition(layer:Int, x:Int, y:Int):Tile
+    {
+        var layer = _tilemap.getLayerAt(layer);
+        for (i in 0...layer.numTiles)
+        {
+            var t = layer.getTileAt(i);
+            if (t.x == x && t.y == y)
+                return t;
+        }
+        return null;
     }
     
     private function processEvents()

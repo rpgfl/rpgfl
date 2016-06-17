@@ -11,13 +11,31 @@ import openfl.display.Tileset;
 import openfl.Assets;
 import openfl.geom.Rectangle;
 
+import rpgfl.data.Tileset in RPGTileset;
+
 class DataParser
 {
     
-    public static function loadLayersFromCSV(map:Tilemap, mapData:Dynamic)
+    public static function loadLayersFromCSV(map:Tilemap, mapData:Dynamic):Array<RPGTileset>
     {
         var cellWidth:Int = mapData.tilewidth;
         var cellHeight:Int = mapData.tileheight;
+        
+        var tilesets = new Array<RPGTileset>();
+        
+        if (mapData.tilesets != null)
+        {
+            for (i in 0...mapData.tilesets.length)
+            {
+                var ts = new RPGTileset();
+                var current:Dynamic = mapData.tilesets[i];
+                
+                ts.id = current.id;
+                ts.name = current.name;
+                ts.canPassTile = current.canPassTile;
+                tilesets.push(ts);
+            }
+        }
         
         for (i in 0...mapData.layers.length)
         {
@@ -67,6 +85,8 @@ class DataParser
             
             map.addLayer(layer);
         }
+        
+        return tilesets;
     }
     
 }
